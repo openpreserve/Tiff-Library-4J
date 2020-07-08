@@ -50,6 +50,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 
  /**
  * The Class TiffInputStream.
@@ -96,7 +97,29 @@ public class TiffInputStream implements TiffDataIntput {
     fileOffset = 0;
     buffer = new PagedInputBuffer(this);
   }
+	  
+  public TiffInputStream(RandomAccessFile raf) throws FileNotFoundException {
+    long mbsize = 0;
+    try {
+      mbsize = raf.getChannel().size();
+    } catch (Exception ex) {
+
+    }
+
+    internalFile = null;
+    internalFileBig = null;
+
+    if (mbsize > 2147483647L) {
+      internalFileBig = new RandomAccessFileInputStream(raf);
+    } else {
+      internalFile = new MappedByteInputStream(raf);
+    }
+    byteOrder = ByteOrder.BIG_ENDIAN;
+    fileOffset = 0;
+    buffer = new PagedInputBuffer(this);
+  }
   
+	  
   /**
    * Gets the byte order.
    *
